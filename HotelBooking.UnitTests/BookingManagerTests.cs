@@ -4,7 +4,6 @@ using HotelBooking.UnitTests.Fakes;
 using Xunit;
 using System.Linq;
 using System.Threading.Tasks;
-using NSubstitute;
 
 namespace HotelBooking.UnitTests
 {
@@ -128,14 +127,16 @@ namespace HotelBooking.UnitTests
         }
 
         [Theory]
-        [InlineData(1, 1, -1)]  // Case 8: Start inside, end after fully booked period
-        [InlineData(9, 21, -1)] // Case 6: Fully inside fully booked period
-        [InlineData(1, -1, -1)] // Case 7
-        [InlineData(-1, 1, -1)] // Case 7
+        [InlineData(1, 1, false)]  // Case 8
+        [InlineData(-1, 1, false)] // Case 4
+        [InlineData(-1, -1, false)] // Case 6
+        [InlineData(3, -3, false)] // Case 7
+        [InlineData(11, 15, true)] // Case 5
+        [InlineData(-7, -15, true)] // Case 3
         public async Task FindAvailableRoom_VariousScenarios_ShouldReturnExpectedRoomId(
             int fromDays, 
             int toDays, 
-            int expectedRoomId)
+            bool isBookable)
         {
             // Arrange
             var from = startDate.AddDays(fromDays);
@@ -145,23 +146,7 @@ namespace HotelBooking.UnitTests
             var roomId = await bookingManager.FindAvailableRoom(from, to);
 
             // Assert
-            Assert.Equal(expectedRoomId, roomId);
+            Assert.Equal(isBookable, roomId > 0);
         }
-        
-        /*
-         *   Når der er et ledig
-         *   ---
-         *
-         *
-         *   Når der ikke er ledig rum
-         *   1. Når den overlapper en anden booking
-         *          a. Når perioden er indenfor booking
-         *          b. Når perioden overlapper start
-         *          c. Når perioden overlapper slut
-         *          d. Når perioden start og slut er før eksisterende booking start og efter slut
-         *
-         *   2. Book tilbage i tiden
-         *
-         */
     }
 }
