@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using HotelBooking.Core;
 using HotelBooking.UnitTests.Fakes;
 using Xunit;
 using System.Linq;
 using System.Threading.Tasks;
+using HotelBooking.Infrastructure.Repositories;
+using Moq;
 
 namespace HotelBooking.UnitTests
 {
@@ -11,7 +14,7 @@ namespace HotelBooking.UnitTests
     {
         private IBookingManager bookingManager;
         IRepository<Booking> bookingRepository;
-
+        
         private DateTime startDate;
         private DateTime endDate;
 
@@ -38,6 +41,71 @@ namespace HotelBooking.UnitTests
             await Assert.ThrowsAsync<ArgumentException>(result);
         }
 
+        [Fact]
+        public async Task FindAvailableRoom()
+        {
+            
+            var customers = new List<Customer>
+            {
+                new Customer { Id = 1, Name = "Alice Johnson", Email = "alice.johnson@example.com" },
+                new Customer { Id = 2, Name = "Bob Smith", Email = "bob.smith@example.com" },
+                new Customer { Id = 3, Name = "Charlie Brown", Email = "charlie.brown@example.com" },
+                new Customer { Id = 4, Name = "Diana Prince", Email = "diana.prince@example.com" }
+            };
+
+            var rooms = new List<Room>
+            {
+                new Room { Id = 1, Description = "Standard single room with a city view" },
+                new Room { Id = 2, Description = "Deluxe double room with a sea view" },
+                new Room { Id = 3, Description = "Suite with a king-size bed and private balcony" },
+                new Room { Id = 4, Description = "Family room with two queen-size beds and kitchenette" }
+            };
+
+            var bookings = new List<Booking>
+            {
+                new Booking 
+                { 
+                    Id = 1, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(3), 
+                    IsActive = true, CustomerId = 1, RoomId = 2, 
+                    Customer = customers[0], Room = rooms[1] 
+                },
+                new Booking 
+                { 
+                    Id = 2, StartDate = DateTime.Now.AddDays(5), EndDate = DateTime.Now.AddDays(10), 
+                    IsActive = false, CustomerId = 2, RoomId = 3, 
+                    Customer = customers[1], Room = rooms[2] 
+                },
+                new Booking 
+                { 
+                    Id = 3, StartDate = DateTime.Now.AddDays(2), EndDate = DateTime.Now.AddDays(7), 
+                    IsActive = true, CustomerId = 3, RoomId = 1, 
+                    Customer = customers[2], Room = rooms[0] 
+                },
+                new Booking 
+                { 
+                    Id = 4, StartDate = DateTime.Now.AddDays(8), EndDate = DateTime.Now.AddDays(12), 
+                    IsActive = false, CustomerId = 4, RoomId = 4, 
+                    Customer = customers[3], Room = rooms[3] 
+                }
+            };
+
+            Mock<IRepository<Room>> mockRoomRepo = new Mock<IRepository<Room>>();
+            Mock<IRepository<Booking>> mockBookingRepo = new Mock<IRepository<Booking>>();
+            
+            // Set up the mock behavior
+            mockRoomRepo.Setup(repo => repo.GetAllAsync()).ReturnsAsync(rooms);
+            mockBookingRepo.Setup(repo => repo.GetAllAsync()).ReturnsAsync(bookings);
+            
+            // Act
+            BookingManager roomService = new BookingManager(mockBookingRepo.Object, mockRoomRepo.Object);
+            int roomId = await roomService.FindAvailableRoom(DateTime.Now.AddDays(2), DateTime.Now.AddDays(7));
+            
+
+            // Assert
+            Assert.Equal(3, roomId);
+            mockRoomRepo.Verify(repo => repo.GetAllAsync(), Times.Once);
+        }    
+            
         [Fact]
         public async Task FindAvailableRoom_RoomAvailable_RoomIdNotMinusOne() // case 3 & 5
         {
