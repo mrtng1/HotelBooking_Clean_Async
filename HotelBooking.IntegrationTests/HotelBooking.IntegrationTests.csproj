@@ -2,30 +2,61 @@
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-
     <IsPackable>false</IsPackable>
+
+    <!-- Add these SpecFlow-specific properties -->
+    <GenerateSpecFlowFeatureFileCodeBehind>true</GenerateSpecFlowFeatureFileCodeBehind>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**\*.feature.cs</DefaultItemExcludes>
   </PropertyGroup>
 
+  <!-- Remove debug/release config overrides unless absolutely needed -->
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>bin\Debug</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
+
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
+
   <ItemGroup>
+    <!-- Test/SpecFlow Packages -->
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageReference Include="xunit" Version="2.9.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2"><IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-<PrivateAssets>all</PrivateAssets>
-</PackageReference>
-    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+    <PackageReference Include="Moq" Version="4.20.70" />
+    <PackageReference Include="SpecFlow" Version="3.9.74" />
+    <PackageReference Include="SpecFlow.Tools.MsBuild.Generation" Version="3.9.74" />
+    <PackageReference Include="SpecFlow.xUnit" Version="3.9.74" />
+    <PackageReference Include="xunit" Version="2.4.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+
+    <!-- Remove obsolete CLI tool reference -->
+    <!-- <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" /> -->
+
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Project References -->
     <ProjectReference Include="..\HotelBooking.Core\HotelBooking.Core.csproj" />
     <ProjectReference Include="..\HotelBooking.Infrastructure\HotelBooking.Infrastructure.csproj" />
+    <ProjectReference Include="..\HotelBooking.WebApi\HotelBooking.WebApi.csproj" /> 
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- SpecFlow Configuration -->
+    <SpecFlowFeatureFiles Include="Features\*.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>%(Filename).feature.cs</LastGenOutput>
+    </SpecFlowFeatureFiles>
+
+    <!-- Prevent .feature files from being treated as embedded resources -->
+    <None Remove="Features\*.feature" />
+    <Content Remove="Features\*.feature" />
+    <EmbeddedResource Remove="Features\*.feature" />
+  </ItemGroup>
+
 </Project>

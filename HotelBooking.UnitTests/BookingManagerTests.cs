@@ -56,8 +56,6 @@ namespace HotelBooking.UnitTests
         [Fact]
         public async Task FindAvailableRoom_RoomAvailable_ReturnsAvailableRoom()
         {
-            // This test was added to satisfy the following test design
-            // principle: "Tests should have strong assertions".
 
             // Arrange
             DateTime date = DateTime.Today.AddDays(1);
@@ -137,7 +135,7 @@ namespace HotelBooking.UnitTests
         [InlineData(3, -3, false)] // Case 7
         [InlineData(11, 15, true)] // Case 5
         [InlineData(-7, -15, true)] // Case 3
-        public async Task FindAvailableRoom_VariousScenarios_ShouldReturnExpectedRoomId(
+        public async Task FindAvailableRoom_VariousScenarios_ShouldReturnValidRoomId(
             int fromDays, 
             int toDays, 
             bool isBookable)
